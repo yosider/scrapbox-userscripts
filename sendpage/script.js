@@ -42,7 +42,7 @@ export function sendPage(targetProjectName, targetUserName, privateTag, image) {
 
             // 出力先ページへのリンクが無ければ付ける
             if (len == json.lines.length) {
-                const body = encodeURIComponent(`[${targetPage}]\n`);
+                const body = encodeURIComponent(`sent to [${targetPage}]\n`);
                 window.open(`https://scrapbox.io/${projectName}/${pageTitle}?body=${body}`, "_self");
             }
         },

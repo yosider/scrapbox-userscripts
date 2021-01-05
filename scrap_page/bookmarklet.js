@@ -1,0 +1,1 @@
+javascript:(function(){var c=document.title,a=[],d=window.getSelection().toString().trim();d&&(a=a.concat(d.split(/\n/g).filter(function(b){return""!==b}).map(function(b){return">"+b})),a.push(""));a=a.concat([c,window.location.href,"","","#scrapocket",""]);a=encodeURIComponent(a.join("\n"));window.open("https://scrapbox.io/universe/"+c+"?body="+a,"_self")})();
