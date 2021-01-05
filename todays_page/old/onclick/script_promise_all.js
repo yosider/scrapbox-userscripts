@@ -21,18 +21,28 @@
     const todayPage = `https://scrapbox.io/api/pages/${projectName}/${title}`;
     const dateTag = `[${prev[0]}/${prev[1]}/${prev[2]}] -> [${today[0]}/${today[1]}]/${today[2]} -> [${next[0]}/${next[1]}/${next[2]}]`;
 
-    todayButton.addEventListener('click', (e) => {
-        fetch(todayPage).then(res => res.json()).then(json => {
+    todayButton.addEventListener('click', async (e) => {
+        const cloneEvent = (() => {
+            let obj = {};
+            for (const key in e) {
+                obj[key] = key != 'bubbles' ? e[key] : false;
+            }
+            const e_ = new MouseEvent(e.type, obj);
+            return e_;
+        })();
+        const setHref = fetch(todayPage).then(res => res.json()).then(json => {
             let body = '';
             if (json.lines.every(line => !line.text.includes(dateTag))) {
                 body = encodeURIComponent(
                     '\n'.repeat(8)  // 書く場所
                     + dateTag
                     + '\n'
-                    );
-                }
-                a.setAttribute('href', `https://scrapbox.io/${projectName}/${title}?body=${body}`);
-                a.dispatchEvent(e);
+                );
+            }
+            a.setAttribute('href', `https://scrapbox.io/${projectName}/${title}?body=${body}`);
+        });
+        Promise.all([cloneEvent, setHref]).then(res => {
+            a.dispatchEvent(res[0]);
         });
     });
 })();
