@@ -1,26 +1,31 @@
-export function sendPage(targetProjectName, targetUserName, privateTag, image) {
+export function sendPage(
+    targetProjectName,  // 送り先プロジェクトの(URL上の)名前
+    targetUserName,  // 送り先プロジェクトのユーザーの表示名
+    privateTag,  // 非公開のページに付けるタグ(#は除く, 不要なら'')
+    image,  // アイコン画像URL
+    link_to = true,  // 送り元ページに送り先へのリンクをつけるか(sent to [$target])
+    link_from = false,  // 送り先ページに送り元へのリンクをつけるか(from [$src])
+) {
     scrapbox.PageMenu.addMenu({
         title: `send to ${targetProjectName}`,
         image: image,
         onClick: async () => {
-            const projectName = scrapbox.Project.name;
             const pageTitle = scrapbox.Page.title;
-            const urlFrom = `https://scrapbox.io/api/pages/${projectName}/${pageTitle}`;
+            const srcPage = `/${scrapbox.Project.name}/${pageTitle}`;
+            const srcUrl = `https://scrapbox.io/api/pages${srcPage}`;
             const targetPage = `/${targetProjectName}/${pageTitle}`;
-            const response = await fetch(urlFrom);
+            const response = await fetch(srcUrl);
             let json = await response.json();
 
             // ページにprivateTagがついている場合はエラー
             if (privateTag && json.links.includes(privateTag)) {
-                let msg = `This page contains #${privateTag}!\nAborted.`;
+                const msg = `This page contains #${privateTag}!\nAborted.`;
                 alert(msg);
                 throw new Error(msg);
             }
-
-            // 出力先ページへのリンクがすでにあれば, その行を消してから送る
-            const len = json.lines.length;
+            // 送り先ページへのリンクを含む行があれば消してから送る
+            const len = json.lines.length;  // 送り先ページへのリンクの有無の判定に使う
             json.lines = json.lines.filter(line => !line.text.includes(`[${targetPage}]`));
-
             const jsonExport = {
                 name: targetProjectName,
                 displayName: targetUserName,
@@ -37,13 +42,16 @@ export function sendPage(targetProjectName, targetUserName, privateTag, image) {
                 headers: { 'X-CSRF-TOKEN': window._csrf },
                 body: formdata,
             });
-            // 出力先ページを開く
-            window.open(`https://scrapbox.io/${targetProjectName}/${pageTitle}`);
-
-            // 出力先ページへのリンクが無ければ付ける
-            if (len == json.lines.length) {
-                const body = encodeURIComponent(`sent to [${targetPage}]\n`);
-                window.open(`https://scrapbox.io/${projectName}/${pageTitle}?body=${body}`, "_self");
+            // 送り先ページを開く
+            // 送り元ページへのリンクが必要ならつける
+            if (link_from) {
+                window.open(`https://scrapbox.io${targetPage}?body=${encodeURIComponent(`from [${srcPage}]\n`)}`);
+            } else {
+                window.open(`https://scrapbox.io${targetPage}`);
+            }
+            // 送り先ページへのリンクが必要ならつける
+            if (link_to && len == json.lines.length) {  // リンクの行を消す前と行数が同じならリンクが無いとする
+                window.open(`https://scrapbox.io${srcPage}?body=${encodeURIComponent(`sent to [${targetPage}]\n`)}`, "_self");
             }
         },
     });
