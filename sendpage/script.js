@@ -12,8 +12,10 @@ export function sendPage(
         onClick: async () => {
             const pageTitle = scrapbox.Page.title;
             const srcPage = `/${scrapbox.Project.name}/${pageTitle}`;
-            const srcUrl = `https://scrapbox.io/api/pages${srcPage}`;
+            const encSrcPage = `/${scrapbox.Project.name}/${encodeURIComponent(pageTitle)}`;
             const targetPage = `/${targetProjectName}/${pageTitle}`;
+            const encTargetPage = `/${targetProjectName}/${encodeURIComponent(pageTitle)}`;
+            const srcUrl = `https://scrapbox.io/api/pages${encSrcPage}`;
             const response = await fetch(srcUrl);
             let json = await response.json();
 
@@ -45,13 +47,13 @@ export function sendPage(
             // 送り先ページを開く
             // 送り元ページへのリンクが必要ならつける
             if (link_from) {
-                window.open(`https://scrapbox.io${targetPage}?body=${encodeURIComponent(`from [${srcPage}]\n`)}`);
+                window.open(`https://scrapbox.io${encTargetPage}?body=${encodeURIComponent(`from [${srcPage}]\n`)}`);
             } else {
-                window.open(`https://scrapbox.io${targetPage}`);
+                window.open(`https://scrapbox.io${encTargetPage}`);
             }
             // 送り先ページへのリンクが必要ならつける
             if (link_to && len == json.lines.length) {  // リンクの行を消す前と行数が同じならリンクが無いとする
-                window.open(`https://scrapbox.io${srcPage}?body=${encodeURIComponent(`sent to [${targetPage}]\n`)}`, "_self");
+                window.open(`https://scrapbox.io${encSrcPage}?body=${encodeURIComponent(`sent to [${targetPage}]\n`)}`, "_self");
             }
         },
     });
